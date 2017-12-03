@@ -1,18 +1,100 @@
 <!doctype HTML>
 <html>
 <script src="https://aframe.io/releases/0.6.1/aframe.min.js"></script>
-<script src="https://rawgit.com/donmccurdy/aframe-extras/v2.1.1/dist/aframe-extras.loaders.min.js"></script>
 <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.5.0/aframe/build/aframe-ar.js"> </script>
-  <body style='margin : 0px; overflow: hidden;'>
+
+<script src="https://rawgit.com/donmccurdy/aframe-extras/v2.1.1/dist/aframe-extras.loaders.min.js"></script>
+<script type="text/javascript">
+
+AFRAME.registerComponent('spawn', {
+dependencies: ['geometry'],
+  schema: {
+    size: {type: 'int', default: 5},
+    time: {type: 'int', default: 0}
+  },
+  init: function () {
+      this.data.time=Date.now();
+      this.el.removeAttribute('geometry');
+    },
+    
+  
+
+  tick:function(){
+    var delta=Date.now()-this.data.time;
+    
+    if(delta>80){
+      var newBox = document.createElement('a-entity');
+
+      var anim=document.createElement('a-animation');
+      anim.setAttribute('attribute','rotation');
+      anim.setAttribute('dur','2500');
+      anim.setAttribute('to','360 360 360');
+      anim.setAttribute('repeat','indefinite');
+
+      
+
+      newBox.setAttribute('mixin', 'box');
+      var posx=Math.floor(Math.random() * this.data.size)
+      var posy=Math.floor(Math.random() * this.data.size)
+      var posz=Math.floor(Math.random() * this.data.size)
+
+      newBox.setAttribute('position', {x:posx,y:posy,z:posz});
+
+      var boxsize=Math.random();
+      newBox.setAttribute('geometry', 'height', boxsize);
+      newBox.setAttribute('geometry', 'width', boxsize);
+      newBox.setAttribute('geometry', 'depth', boxsize);
+
+      newBox.setAttribute('life','duration',Math.floor(Math.random() * 1500)+1500);
+      
+      newBox.appendChild(anim);
+      this.el.appendChild(newBox);
+      this.data.time=Date.now();
+    }
+
+  }
+   
+  
+  
+});
+
+AFRAME.registerComponent('life', {
+  schema: {
+    duration: {type: 'int', default: 5000},
+    time: {type: 'int', default: 0}
+  },
+  init: function () {
+      this.data.time=Date.now();
+      var anim=document.createElement('a-animation');
+      anim.setAttribute('attribute','scale');
+      anim.setAttribute('dur',this.data.duration);
+      anim.setAttribute('to','0 0 0');
+      anim.setAttribute('repeat','indefinite');
+      this.el.appendChild(anim);
+    },
+    
+  
+
+  tick:function(){
+    var delta=Date.now()-this.data.time;
+    if(delta>this.data.duration){
+        this.el.parentNode.removeChild(this.el);
+     }
+  }  
+});
+  
+</script>
+  <body>
     <a-scene embedded arjs>
-      <a-assets>
-        <a-asset-item id="testArPoly" src="testar.ply"></a-asset-item>
-      </a-assets>
-  	<a-marker preset="hiro">
-            <a-entity ply-model="src: #testArPoly" position="0 -1.3 0" scale="0.03 0.03 0.03" rotation="-90 0 0"></a-entity>
-            
-  	</a-marker>
-  	<a-entity camera></a-entity>
+    <a-mixin id="box"
+       geometry="primitive: box;"
+       material="shader: standard;color:red"></a-mixin>
+        <a-marker preset="hiro">
+
+            <a-entity scale="0.2 0.2 0.2" spawn></a-entity>
+            </a-marker>
+                <a-entity camera></a-entity>
+
     </a-scene>
   </body>
 </html>
